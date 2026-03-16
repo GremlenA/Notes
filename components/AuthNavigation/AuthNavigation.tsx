@@ -1,22 +1,31 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import css from "./AuthNavigation.module.css";
-import { useAuthStore } from "@/lib/store/authStore";
-import { logout } from "@/lib/api/clientApi";
-import { useRouter } from "next/navigation";
+import Link from 'next/link';
+import css from './AuthNavigation.module.css';
+import { useAuthStore } from '@/lib/store/authStore';
+import { logout } from '@/lib/api/clientApi';
 
-function AuthNavigation() {
-  const router = useRouter();
+const AuthNavigation = () => {
   const { isAuthenticated, user } = useAuthStore();
   const clearIsAuthenticated = useAuthStore(
     (state) => state.clearIsAuthenticated,
   );
 
   const handleLogout = async () => {
-    await logout();
-    clearIsAuthenticated();
-    router.push("/sign-in");
+    try {
+      // Пытаемся разлогиниться на сервере
+      await logout();
+    } catch (error) {
+      // Если сессия уже истекла (ошибка 400), просто игнорируем
+      console.warn('Session already cleared on server.');
+    } finally {
+      // Очищаем локальный стейт Zustand
+      clearIsAuthenticated();
+      
+      // Делаем жесткую перезагрузку и перенаправление, 
+      // чтобы сбросить кэш Next.js и убрать страницу профиля
+      window.location.href = '/sign-in';
+    }
   };
 
   return isAuthenticated ? (
@@ -26,7 +35,6 @@ function AuthNavigation() {
           Profile
         </Link>
       </li>
-
       <li className={css.navigationItem}>
         <p className={css.userEmail}>{user?.email}</p>
         <button className={css.logoutButton} onClick={handleLogout}>
@@ -41,7 +49,6 @@ function AuthNavigation() {
           Login
         </Link>
       </li>
-
       <li className={css.navigationItem}>
         <Link href="/sign-up" prefetch={false} className={css.navigationLink}>
           Sign up
@@ -49,6 +56,6 @@ function AuthNavigation() {
       </li>
     </>
   );
-}
+};
 
 export default AuthNavigation;

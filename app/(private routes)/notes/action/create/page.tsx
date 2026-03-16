@@ -1,26 +1,36 @@
-import type { Metadata } from "next";
-import CreateNote from "./CreateNote";
+import NoteForm from '@/components/NoteForm/NoteForm';
+import css from './CreateNote.module.css';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "NoteHub Create Note Page",
-  description: "Page to create note",
+  title: 'Create note',
+  description: 'Page with form for adding new note',
   openGraph: {
-    title: "NoteHub Create Note Page",
-    description: "Page to create note",
-    url: "/home",
+    title: `Create note`,
+    description: 'Page with form for adding new note',
+    url: `https://09-auth-mu-wheat.vercel.app/notes/action/create`,
+    siteName: 'NoteHub',
     images: [
       {
-        url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+        url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
         width: 1200,
         height: 630,
-        alt: "NoteHub App",
+        alt: 'NoteHub app banner',
       },
     ],
+    type: 'article',
   },
 };
 
-function CreateNotePage() {
-  return <CreateNote />;
-}
+const CreateNote = () => {
+  return (
+    <main className={css.main}>
+      <div className={css.container}>
+        <h1 className={css.title}>Create note</h1>
+        <NoteForm />
+      </div>
+    </main>
+  );
+};
 
-export default CreateNotePage;
+export default CreateNote;

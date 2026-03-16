@@ -1,0 +1,3 @@
+Name: Test User
+Email: final.test.999@goit.com
+Password: Qwerty123456

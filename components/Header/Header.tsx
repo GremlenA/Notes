@@ -1,21 +1,24 @@
-import Link from "next/link";
 import css from "./Header.module.css";
+import Link from 'next/link';
+// Додаємо імпорт нашого компонента навігації
 import AuthNavigation from "../AuthNavigation/AuthNavigation";
 
-function Header() {
+const Header = () => {
   return (
     <header className={css.header}>
-      <Link href="/" aria-label="Home">
+      <Link href="/" aria-label="Home" className={css.headerLink}>
         NoteHub
       </Link>
       <nav aria-label="Main Navigation">
         <ul className={css.navigation}>
-          <li>
-            <Link href="/">Home</Link>
+          <li className={css.navigationItem}>
+            <Link href="/" className={css.navigationLink}>Home</Link>
           </li>
-          <li>
-            <Link href="/notes/filter/all">Notes</Link>
+          <li className={css.navigationItem}>
+            <Link href='/notes/filter/all' className={css.navigationLink}>Notes</Link>
           </li>
+          
+          {/* Вставляємо динамічні кнопки (Login/SignUp або Profile/Logout) */}
           <AuthNavigation />
         </ul>
       </nav>

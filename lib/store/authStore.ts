@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import { User } from "@/types/user";
+import { User } from '@/types/user';
+import { create } from 'zustand';
 
 type AuthStore = {
   isAuthenticated: boolean;

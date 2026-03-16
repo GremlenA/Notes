@@ -1,13 +1,21 @@
 "use client";
-import Modal from "@/components/Modal/Modal";
-import css from "./NotePreview.module.css";
-import { fetchNoteById } from "@/lib/api/clientApi";
-import { useQuery } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
 
-const NotePreview = () => {
+import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+
+import Modal from "@/components/Modal/Modal";
+import { fetchNoteById } from "@/lib/api";
+
+type Props = {
+  id: string;
+};
+
+export default function NoteModalClient({ id }: Props) {
   const router = useRouter();
-  const { id } = useParams<{ id: string }>();
+
+  const handleClose = () => {
+    router.back();
+  };
 
   const {
     data: note,
@@ -16,31 +24,31 @@ const NotePreview = () => {
   } = useQuery({
     queryKey: ["note", id],
     queryFn: () => fetchNoteById(id),
+    enabled: !!id,
     refetchOnMount: false,
   });
 
-  if (isLoading) return <p>Loading, please wait...</p>;
-
-  if (error || !note) return <p>Something went wrong.</p>;
-
-  const onClose = () => {
-    router.back();
-  };
-
   return (
-    <Modal onClose={onClose}>
-      <div className={css.container}>
-        <div className={css.item}>
-          <div className={css.header}>
-            <h2>{note.title}</h2>
-          </div>
-          <p className={css.content}>{note.content}</p>
-          <p className={css.date}>{note.createdAt}</p>
-          <p className={css.tag}>{note.tag}</p>
+    <Modal onClose={handleClose}>
+      {isLoading && <p>Loading...</p>}
+
+      {(error || !note) && !isLoading && (
+        <p>Failed to load note</p>
+      )}
+
+      {note && (
+        <div>
+          <h2>{note.title}</h2>
+          <p>
+            <strong>Tag:</strong> {note.tag}
+          </p>
+          <p>{note.content}</p>
+          <p>
+            <strong>Created:</strong>{" "}
+            {new Date(note.createdAt).toLocaleString()}
+          </p>
         </div>
-      </div>
+      )}
     </Modal>
   );
-};
-
-export default NotePreview;
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchNoteById } from "@/lib/api/clientApi";
+import { fetchNoteById } from "@/lib/api";
 import css from "./NotePreview.module.css";
 
 export default function NotePreview({ noteId }: { noteId: string }) {

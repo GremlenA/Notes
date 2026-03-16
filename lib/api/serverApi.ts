@@ -1,75 +1,61 @@
-// fetchNotes
-// fetchNoteById
-// getMe
-// checkSession.
-import type { Note } from "@/types/note";
-import { instance } from "./api";
-import { cookies } from "next/headers";
-import { User } from "@/types/user";
+import { cookies } from 'next/headers';
+import { nextServer } from './api';
+import { User } from '@/types/user';
+import { Note } from '@/types/note';
 
-interface FetchNotesResponse {
+export const checkServerSession = async () => {
+  const cookieStore = await cookies();
+  const res = await nextServer.get('/auth/session', {
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+  });
+  return res;
+};
+
+export const getServerMe = async (): Promise<User> => {
+  const cookieStore = await cookies();
+  const { data } = await nextServer.get<User>('/users/me', {
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+  });
+  return data;
+};
+
+interface FetchNotesHttpResponse {
   notes: Note[];
   totalPages: number;
 }
 
-async function fetchServerNotes(
-  currentPage: number,
-  searchQuery: string,
+export const fetchNotes = async (
+  page: number,
+  search: string,
   tag?: string,
-): Promise<FetchNotesResponse> {
-  const params: {
-    page: number;
-    perPage: number;
-    search?: string;
-    tag?: string | undefined;
-  } = {
-    page: currentPage,
-    perPage: 12,
-  };
-
-  if (searchQuery.trim() !== "") {
-    params.search = searchQuery;
-  }
-
-  if (tag && tag !== "all") {
-    params.tag = tag;
-  }
+): Promise<FetchNotesHttpResponse> => {
   const cookieStore = await cookies();
 
-  const { data } = await instance.get<FetchNotesResponse>(`/notes`, {
-    params,
-    headers: { Cookie: cookieStore.toString() },
+  const { data } = await nextServer.get<FetchNotesHttpResponse>('/notes', {
+    params: {
+      search,
+      tag,
+      page,
+      perPage: 12,
+    },
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
   });
   return data;
-}
+};
 
-async function fetchServerNoteById(id: string): Promise<Note> {
+export const fetchNoteById = async (id: Note['id']): Promise<Note> => {
   const cookieStore = await cookies();
-  const { data } = await instance.get<Note>(`/notes/${id}`, {
-    headers: { Cookie: cookieStore.toString() },
+
+  const { data } = await nextServer.get<Note>(`/notes/${id}`, {
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
   });
   return data;
-}
-
-async function getServerMe(): Promise<User> {
-  const cookieStore = await cookies();
-  const { data } = await instance.get<User>("/users/me", {
-    headers: { Cookie: cookieStore.toString() },
-  });
-  return data;
-}
-
-async function checkServerSession() {
-  const cookieStore = await cookies();
-  const res = await instance.get("/auth/session", {
-    headers: { Cookie: cookieStore.toString() },
-  });
-  return res;
-}
-
-export {
-  fetchServerNotes,
-  fetchServerNoteById,
-  getServerMe,
-  checkServerSession,
 };

@@ -1,5 +1,5 @@
 {
-  "name": "09-auth",
+  "name": "06-notehub-nextjs",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,15 +9,15 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.90.12",
-    "axios": "^1.13.2",
+    "@tanstack/react-query": "^5.90.5",
+    "@types/yup": "^0.29.14",
+    "axios": "^1.13.6",
     "cookie": "^1.1.1",
-    "formik": "^2.4.9",
-    "modern-normalize": "^3.0.1",
-    "next": "16.1.0",
-    "next-router-mock": "^1.0.4",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "formik": "^2.4.6",
+    "next": "^16.0.10",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-hot-toast": "^2.6.0",
     "react-paginate": "^8.3.0",
     "use-debounce": "^10.0.6",
     "yup": "^1.7.1",
@@ -28,8 +28,9 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
+    "baseline-browser-mapping": "^2.10.0",
     "eslint": "^9",
-    "eslint-config-next": "16.1.0",
+    "eslint-config-next": "16.0.0",
     "typescript": "^5"
   }
 }

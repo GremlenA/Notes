@@ -1,46 +1,62 @@
 "use client";
+
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import css from "./Modal.module.css";
-import { useEffect, type ReactNode } from "react";
 
-interface ModalProps {
+interface Props {
+  children: React.ReactNode;
   onClose: () => void;
-  children: ReactNode;
 }
 
-function Modal({ onClose, children }: ModalProps) {
-  const handleBackdropClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (event.target === event.currentTarget) {
-      onClose();
-    }
-  };
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
+const Modal: React.FC<Props> = ({ children, onClose }) => {
+  const [mounted, setMounted] = useState(false);
+  const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
 
-    document.addEventListener("keydown", handleKeyDown);
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    
+    queueMicrotask(() => {
+      const root = document.getElementById("modal-root") ?? document.body;
+      setModalRoot(root);
+      setMounted(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
     };
-  }, [onClose]);
+
+    document.addEventListener("keydown", onKey);
+
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [mounted, onClose]);
+
+  if (!mounted || !modalRoot) return null;
 
   return createPortal(
     <div
       className={css.backdrop}
       role="dialog"
       aria-modal="true"
-      onClick={handleBackdropClick}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className={css.modal}>{children}</div>
     </div>,
-    document.body,
+    modalRoot
   );
-}
+};
 
 export default Modal;

@@ -1,5 +1,3 @@
-/* page.module.css */
-
 .mainContent {
   flex: 1;
   display: flex;
@@ -99,30 +97,15 @@
   border: 2px solid #6c757d;
   border-radius: 8px;
   cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .cancelButton:hover {
   background-color: #6c757d;
   color: white;
 }
-
 .actions {
   display: flex;
   gap: 12px;
   margin-top: 20px;
-}
-
-.inputReadonly {
-  background-color: transparent;
-  border: none;
-  padding: 0;
-  color: inherit;
-  cursor: default;
-}
-
-.inputReadonly:focus {
-  outline: none;
 }

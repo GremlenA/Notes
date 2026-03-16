@@ -1,29 +1,45 @@
-import Link from "next/link";
-import css from "./ProfilePage.module.css";
-import Image from "next/image";
-import { Metadata } from "next";
-import { getServerMe } from "@/lib/api/serverApi";
+import Image from 'next/image';
+import css from './ProfilePage.module.css';
+import Link from 'next/link';
+import { Metadata } from 'next';
+import { getServerMe } from '@/lib/api/serverApi';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
-  title: "NoteHub App",
-  description: "App to manage and oraganize notes efficiently",
+  title: 'Your profile',
+  description: 'Your profile page',
   openGraph: {
-    title: "NoteHub App Profile Page",
-    description: "Profile page of NoteHub App",
-    url: "https://09-auth-liard-omega.vercel.app/profile",
+    title: `Your profile`,
+    description: 'Your profile page',
+    url: `https://09-auth-mu-wheat.vercel.app/profile`,
+    siteName: 'NoteHub',
     images: [
       {
-        url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+        url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
         width: 1200,
         height: 630,
-        alt: "NoteHub App",
+        alt: 'NoteHub app banner',
       },
     ],
+    type: 'article',
   },
 };
 
-async function ProfilePage() {
-  const user = await getServerMe();
+const ProfilePage = async () => {
+  let user;
+
+  
+ try {
+    user = await getServerMe();
+  } catch { 
+    redirect('/sign-in');
+  }
+
+
+  if (!user) {
+    redirect('/sign-in');
+  }
+
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>
@@ -35,7 +51,7 @@ async function ProfilePage() {
         </div>
         <div className={css.avatarWrapper}>
           <Image
-            src={user?.avatar ||"Avatar"}
+            src={user.avatar}
             alt="User Avatar"
             width={120}
             height={120}
@@ -43,12 +59,12 @@ async function ProfilePage() {
           />
         </div>
         <div className={css.profileInfo}>
-          <p>Username: {user?.username}</p>
-          <p>Email: {user?.email}</p>
+          <p>Username: {user.username}</p>
+          <p>Email: {user.email}</p>
         </div>
       </div>
     </main>
   );
-}
+};
 
 export default ProfilePage;
