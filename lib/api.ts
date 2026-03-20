@@ -1,11 +1,10 @@
 import axios from "axios";
 import type { Note, NewNote } from "../types/note";
 
-// 1. Убираем внешний URL и старые токены! 
-// Теперь всё идет через наш локальный Next.js прокси
+
 const api = axios.create({
   baseURL: "/api",
-  withCredentials: true, // Обязательно для передачи куки сессии
+  withCredentials: true, 
 });
 
 export interface FetchNotesParams {
