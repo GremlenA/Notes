@@ -16,14 +16,27 @@ export default function NoteList({ notes }: NoteListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
 
+ // =====================================================================
+  // АВТОМАТИЧНИЙ СМІТТЄВОЗ (Фонове очищення з таймером)
+  // =====================================================================
   useEffect(() => {
+    let isChecking = true; // Прапорець активності
+
     const runCleanup = async () => {
+      // Якщо прапорець опущений (сесія закінчилась) — нічого не робимо
+      if (!isChecking) return;
+
       try {
         const res = await fetch('/api/notes/cleanup', { method: 'POST' });
         
+        if (res.status === 401) {
+          console.log('[Сміттєвоз]: Сесія закінчилася. Зупиняю патруль.');
+          isChecking = false; // Опускаємо прапорець
+          return;
+        }
+
         if (res.ok) {
           const data = await res.json();
-       
           if (data.deletedCount && data.deletedCount > 0) {
             console.log(`[Сміттєвоз]: Видалено ${data.deletedCount} нотаток. Оновлюю інтерфейс...`);
             qc.invalidateQueries({ queryKey: ["notes"] }); 
@@ -34,15 +47,19 @@ export default function NoteList({ notes }: NoteListProps) {
       }
     };
 
-   
+    // 1. Перший запуск
     runCleanup();
 
-  
+    // 2. Тепер ESLint абсолютно щасливий, бо ми використали const!
     const intervalId = setInterval(runCleanup, 10000);
 
-  
-    return () => clearInterval(intervalId);
+    // 3. Очищення при виході зі сторінки
+    return () => {
+      isChecking = false;
+      clearInterval(intervalId);
+    };
   }, [qc]);
+  // =====================================================================
 
 
   const delMutation = useMutation({
