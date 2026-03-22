@@ -69,3 +69,11 @@
   font-size: 12px;
   margin-top: 4px;
 }
+.row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.row .formGroup {
+  flex: 1;
+}
