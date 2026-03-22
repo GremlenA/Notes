@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
       if (msMap[ttl]) {
         const expirationTimestamp = Date.now() + msMap[ttl];
-        // ВИПРАВЛЕНО: Тепер мітка [TTL:12345...] надійно додається в кінець тексту
+        
         modifiedContent = `${content}\n\n[TTL:${expirationTimestamp}]`;
       }
     }

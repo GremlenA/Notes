@@ -15,9 +15,7 @@ export default function NoteList({ notes }: NoteListProps) {
   const qc = useQueryClient();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // =====================================================================
-  // АВТОМАТИЧНИЙ СМІТТЄВОЗ (Фонове очищення)
-  // =====================================================================
+
   useEffect(() => {
     const runCleanup = async () => {
       try {
@@ -25,9 +23,9 @@ export default function NoteList({ notes }: NoteListProps) {
         
         if (res.ok) {
           const data = await res.json();
-          // Якщо знайшли і видалили сміття - оновлюємо список на екрані
+       
           if (data.deletedCount && data.deletedCount > 0) {
-            console.log(`[Сміттєвоз]: Знайдено та видалено ${data.deletedCount} прострочених нотаток.`);
+            console.log(`[Сміттєвоз]: Видалено ${data.deletedCount} нотаток. Оновлюю інтерфейс...`);
             qc.invalidateQueries({ queryKey: ["notes"] }); 
           }
         }
@@ -36,9 +34,16 @@ export default function NoteList({ notes }: NoteListProps) {
       }
     };
 
+   
     runCleanup();
+
+  
+    const intervalId = setInterval(runCleanup, 10000);
+
+  
+    return () => clearInterval(intervalId);
   }, [qc]);
-  // =====================================================================
+
 
   const delMutation = useMutation({
     mutationFn: (id: string) => deleteNote(id),
@@ -61,8 +66,7 @@ export default function NoteList({ notes }: NoteListProps) {
   return (
     <ul className={css.list}>
       {notes.map((note) => {
-        // ВИПРАВЛЕНО: Тепер ми вирізаємо нову мітку у квадратних дужках [TTL:123...]
-        // TSX більше не буде на це сваритися, і мітка не вилізе на екран!
+      
         const cleanContent = note.content 
           ? note.content.replace(/\[TTL:\d+\]/g, '').trim() 
           : '';
@@ -71,19 +75,19 @@ export default function NoteList({ notes }: NoteListProps) {
           <li key={note.id} className={css.listItem}>
             <h2 className={css.title}>{note.title}</h2>
             
-            {/* Виводимо очищений контент */}
+       
             <p className={css.content}>{cleanContent}</p>
 
             <div className={css.footer}>
-              {/* Tag */}
+        
               <span className={css.tag}>{note.tag}</span>
 
-              {/* View details */}
+             
               <Link href={`/notes/${note.id}`} className={css.link}>
                 View details
               </Link>
 
-              {/* Delete */}
+             
               <button
                 className={css.button}
                 disabled={deletingId === note.id}

@@ -28,7 +28,7 @@ export async function POST() {
     const now = Date.now();
     const ttlRegex = /\[TTL:(\d+)\]/;
     
-    // Починаємо перевірку кожної нотатки
+
     const expiredNotes = notesList.filter((note: Note) => {
       if (!note.content) return false;
 
@@ -39,23 +39,23 @@ export async function POST() {
         const timeLeft = Math.round((expirationTime - now) / 1000);
         
         if (timeLeft > 0) {
-          // Якщо час ще є, виводимо таймер у термінал
+          
           console.log(`⏳ Нотатка "${note.title}": ще жива. До видалення: ${timeLeft} сек.`);
           return false;
         } else {
-          // Якщо час вийшов (timeLeft <= 0)
+        
           console.log(`💥 Нотатка "${note.title}": ЧАС ВИЙШОВ! Готуємо до видалення.`);
           return true;
         }
       }
-      return false; // Це звичайні нотатки без мітки TTL
+      return false; 
     });
 
     if (expiredNotes.length === 0) {
       return NextResponse.json({ message: 'Сміття не знайдено' });
     }
 
-    // Видалення
+
     await Promise.all(
       expiredNotes.map((note: Note) => 
         api.delete(`notes/${note.id}`, { headers: authHeader })
