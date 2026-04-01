@@ -28,13 +28,11 @@ export const metadata: Metadata = {
 const ProfilePage = async () => {
   let user;
 
-  
- try {
+  try {
     user = await getServerMe();
   } catch { 
     redirect('/sign-in');
   }
-
 
   if (!user) {
     redirect('/sign-in');
@@ -49,15 +47,38 @@ const ProfilePage = async () => {
             Edit Profile
           </Link>
         </div>
+        
         <div className={css.avatarWrapper}>
-          <Image
-            src={user.avatar}
-            alt="User Avatar"
-            width={120}
-            height={120}
-            className={css.avatar}
-          />
+          {/* НАДЕЖНАЯ ПРОВЕРКА: Если есть аватар - грузим Image, иначе - заглушку */}
+          {user.avatar ? (
+            <Image
+              src={user.avatar}
+              alt="User Avatar"
+              width={120}
+              height={120}
+              className={css.avatar}
+            />
+          ) : (
+            <div 
+              className={css.avatar} 
+              style={{ 
+                width: 120, 
+                height: 120, 
+                backgroundColor: '#e0e0e0', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                borderRadius: '50%',
+                color: '#555',
+                fontWeight: 'bold',
+                fontSize: '14px'
+              }}
+            >
+              <span>No Avatar</span>
+            </div>
+          )}
         </div>
+
         <div className={css.profileInfo}>
           <p>Username: {user.username}</p>
           <p>Email: {user.email}</p>
