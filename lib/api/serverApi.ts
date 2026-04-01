@@ -3,21 +3,28 @@ import { nextServer } from './api';
 import { User } from '@/types/user';
 import { Note } from '@/types/note';
 
-export const checkServerSession = async () => {
+// 🛠 НОВА ФУНКЦІЯ: Надійно збирає куки в правильний рядок для Vercel
+const getCookieHeader = async () => {
   const cookieStore = await cookies();
+  // Дістаємо всі куки поштучно і склеюємо їх у формат "name=value; name2=value2"
+  return cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
+};
+
+export const checkServerSession = async () => {
+  const cookieString = await getCookieHeader();
   const res = await nextServer.get('/auth/session', {
     headers: {
-      Cookie: cookieStore.toString(),
+      Cookie: cookieString,
     },
   });
   return res;
 };
 
 export const getServerMe = async (): Promise<User> => {
-  const cookieStore = await cookies();
+  const cookieString = await getCookieHeader();
   const { data } = await nextServer.get<User>('/users/me', {
     headers: {
-      Cookie: cookieStore.toString(),
+      Cookie: cookieString,
     },
   });
   return data;
@@ -33,7 +40,7 @@ export const fetchNotes = async (
   search: string,
   tag?: string,
 ): Promise<FetchNotesHttpResponse> => {
-  const cookieStore = await cookies();
+  const cookieString = await getCookieHeader();
 
   const { data } = await nextServer.get<FetchNotesHttpResponse>('/notes', {
     params: {
@@ -43,18 +50,18 @@ export const fetchNotes = async (
       perPage: 12,
     },
     headers: {
-      Cookie: cookieStore.toString(),
+      Cookie: cookieString,
     },
   });
   return data;
 };
 
 export const fetchNoteById = async (id: Note['id']): Promise<Note> => {
-  const cookieStore = await cookies();
+  const cookieString = await getCookieHeader();
 
   const { data } = await nextServer.get<Note>(`/notes/${id}`, {
     headers: {
-      Cookie: cookieStore.toString(),
+      Cookie: cookieString,
     },
   });
   return data;
