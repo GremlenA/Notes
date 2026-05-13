@@ -18,8 +18,8 @@ export function calculateDynamicPriority(content: string, createdAt: string, upd
   const updated = new Date(updatedAt).getTime();
 
   // Расчет времени для новых заметок
-  const daysSinceCreation = (now - created) / (1000 * 3600 * 24);
-  const daysSinceLastView = (now - updated) / (1000 * 3600 * 24);
+  const daysSinceCreation = (now - created) / 1000;
+  const daysSinceLastView = (now - updated) / 1000;
 
   // Формула деградации (только для заметок с тегом)
   const score = basePriority - (daysSinceCreation * 0.5) - (daysSinceLastView * 2.0);
