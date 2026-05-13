@@ -1,81 +1,36 @@
-import { NextResponse } from 'next/server';
-import { api } from '../../api';
-import { cookies } from 'next/headers';
-import { isAxiosError } from 'axios';
-
-interface Note {
-  id: string;
-  title: string;
-  content: string;
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-  tag: string;
-}
+import { fetchNotes, deleteNote } from '@/lib/api/serverApi';
+import { calculateDynamicPriority } from '@/utils/priority';
 
 export async function POST() {
   try {
-    const cookieStore = await cookies();
-    const authHeader = { Cookie: cookieStore.toString() };
-
-    const response = await api.get('notes', { headers: authHeader });
-    const responseData = response.data;
+    const data = await fetchNotes(1, ''); 
+    const notes = data.notes;
     
-    const notesList: Note[] = Array.isArray(responseData) 
-      ? responseData 
-      : (responseData?.notes || []);
+    let deletedCount = 0;
+    const threshold = 10; 
 
-    const now = Date.now();
-    const ttlRegex = /\[TTL:(\d+)\]/;
-    
-
-    const expiredNotes = notesList.filter((note: Note) => {
-      if (!note.content) return false;
-
-      const match = note.content.match(ttlRegex);
+    for (const note of notes) {
+      const score = calculateDynamicPriority(note.content, note.createdAt, note.updatedAt);
       
-      if (match && match[1]) {
-        const expirationTime = parseInt(match[1], 10);
-        const timeLeft = Math.round((expirationTime - now) / 1000);
-        
-        if (timeLeft > 0) {
-          
-          console.log(`⏳ Нотатка "${note.title}": ще жива. До видалення: ${timeLeft} сек.`);
-          return false;
-        } else {
-        
-          console.log(`💥 Нотатка "${note.title}": ЧАС ВИЙШОВ! Готуємо до видалення.`);
-          return true;
+      // Старые заметки (100 баллов) никогда не упадут ниже порога 10
+      if (score < threshold) {
+        try {
+          await deleteNote(note.id);
+          deletedCount++;
+        } catch (error) {
+          if (error instanceof Error && error.message.includes('404')) {
+            console.log(`Заметка ${note.id} уже удалена.`);
+          }
         }
       }
-      return false; 
-    });
-
-    if (expiredNotes.length === 0) {
-      return NextResponse.json({ message: 'Сміття не знайдено' });
     }
 
-
-    await Promise.all(
-      expiredNotes.map((note: Note) => 
-        api.delete(`notes/${note.id}`, { headers: authHeader })
-      )
-    );
-
-    console.log(`✅ Сміттєвоз успішно видалив нотаток: ${expiredNotes.length}`);
-
-    return NextResponse.json({ 
-      message: 'Очищення завершено', 
-      deletedCount: expiredNotes.length 
+    return Response.json({ 
+      message: `Очистка завершена. Удалено: ${deletedCount}`,
+      status: 'success',
+      deletedCount
     });
-
   } catch (error) {
-    if (isAxiosError(error)) {
-      return NextResponse.json(
-        { error: 'Cleanup failed', details: error.response?.data },
-        { status: error.response?.status || 500 }
-      );
-    }
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return Response.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
 }

@@ -1,10 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
 import Modal from "@/components/Modal/Modal";
-import { fetchNoteById } from "@/lib/api";
+// Убедись, что updateNote экспортируется из твоего файла api!
+import { fetchNoteById, updateNote } from "@/lib/api"; 
 
 type Props = {
   id: string;
@@ -27,6 +29,33 @@ export default function NoteModalClient({ id }: Props) {
     enabled: !!id,
     refetchOnMount: false,
   });
+
+  // --- ИНТЕЛЛЕКТУАЛЬНАЯ СИСТЕМА: Фиксация просмотра ---
+  useEffect(() => {
+    // Если данные еще не загрузились, ничего не делаем
+    if (!note || !note.id) return;
+
+    const markAsViewed = async () => {
+      try {
+        // Отправляем "холостой" запрос. 
+        // Мы передаем тот же самый title, поэтому визуально ничего не меняется,
+        // но бекенд обновляет поле updatedAt на текущее время!
+        await updateNote(note.id, { title: note.title }); 
+        console.log(`[Smart System]: Нотатка ${note.id} прочитана. Приоритет повышен!`);
+      } catch (e) {
+        console.error("[Smart System]: Не удалось обновить приоритет", e);
+      }
+    };
+
+    // Запускаем таймер: засчитываем просмотр только если пользователь 
+    // читает нотатку дольше 3 секунд
+    const timer = setTimeout(markAsViewed, 3000);
+
+    // Функция очистки: если пользователь быстро закрыл нотатку (до 3 сек),
+    // таймер сбрасывается и просмотр не засчитывается.
+    return () => clearTimeout(timer);
+  }, [note]); 
+  // ----------------------------------------------------
 
   return (
     <Modal onClose={handleClose}>

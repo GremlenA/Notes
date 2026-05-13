@@ -49,3 +49,8 @@ export const deleteNote = async (id: string) => {
   const res = await api.delete<Note>(`/notes/${id}`);
   return res.data;
 };
+export const updateNote = async (id: string, payload: Partial<Note>) => {
+  // Зверни увагу: запит йде на /notes/${id}, а не на /users/me
+  const res = await api.patch<Note>(`/notes/${id}`, payload);
+  return res.data;
+};

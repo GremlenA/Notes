@@ -85,3 +85,14 @@ export const deleteNote = async (id: string): Promise<Note> => {
   const { data } = await nextServer.delete<Note>(`/notes/${id}`);
   return data;
 };
+export type UpdateNotePayload = {
+  title?: string;
+  content?: string;
+  tag?: string;
+};
+
+// Функция для "тихого" обновления нотатки из браузера
+export const updateNote = async (id: string, payload: UpdateNotePayload): Promise<Note> => {
+  const { data } = await nextServer.patch<Note>(`/notes/${id}`, payload);
+  return data;
+};

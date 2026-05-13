@@ -10,13 +10,11 @@ import { useNoteStore } from "@/lib/store/noteStore";
 
 const tagOptions = ["Todo", "Work", "Personal", "Meeting", "Shopping"] as const;
 
-// Опції для терміну життя нотатки
-const ttlOptions = [
-  { label: "Безстроково", value: "" },
-  { label: "1 хвилина (тест)", value: "test" },
-  { label: "1 день", value: "1d" },
-  { label: "5 днів", value: "5d" },
-  { label: "1 тиждень", value: "7d" },
+// 🟢 НОВЕ: Опції для пріоритету замість терміну життя
+const priorityOptions = [
+  { label: "🟩 Важлива (Зберегти назавжди)", value: "100" },
+  { label: "🟨 Звичайна (Середній пріоритет)", value: "60" },
+  { label: "🟥 Тимчасова (Сміттєвоз видалить її)", value: "30" },
 ];
 
 type NoteFormProps = {
@@ -28,14 +26,13 @@ export default function NoteForm({ onCancel, onSuccess }: NoteFormProps) {
   const router = useRouter();
   const qc = useQueryClient();
   
-  // Локальний стан для обраного терміну життя
-  const [selectedTtl, setSelectedTtl] = useState("");
+  // 🟢 НОВЕ: Локальний стан для обраного пріоритету (за замовчуванням 100 - Важлива)
+  const [selectedPriority, setSelectedPriority] = useState("100");
 
   const draft = useNoteStore((s) => s.draft);
   const setDraft = useNoteStore((s) => s.setDraft);
   const clearDraft = useNoteStore((s) => s.clearDraft);
 
-  // Мутація з чітким типом NewNote (без any)
   const mutation = useMutation({
     mutationFn: (data: NewNote) => createNote(data),
     onSuccess: () => {
@@ -52,16 +49,16 @@ export default function NoteForm({ onCancel, onSuccess }: NoteFormProps) {
 
   const handleCreate = async (formData: FormData) => {
     const title = String(formData.get("title") ?? "");
-    const content = String(formData.get("content") ?? "");
+    const rawContent = String(formData.get("content") ?? "");
     const tag = String(formData.get("tag") ?? "Todo") as NewNote["tag"];
-    const ttl = String(formData.get("ttl") ?? "");
 
-    // Відправляємо дані на проксі-бекенд
+    // 🟢 НОВЕ: Ховаємо пріоритет у текст контенту перед відправкою
+    const contentWithPriority = `[PRIORITY:${selectedPriority}] ${rawContent}`;
+
     await mutation.mutateAsync({ 
       title, 
-      content, 
-      tag, 
-      ttl // Передаємо обраний термін
+      content: contentWithPriority, 
+      tag 
     });
   };
 
@@ -107,7 +104,7 @@ export default function NoteForm({ onCancel, onSuccess }: NoteFormProps) {
           />
         </div>
 
-        {/* Рядок з двома селектами: Тег та Термін життя */}
+        {/* Рядок з двома селектами: Тег та Пріоритет */}
         <div className={css.row}>
           <div className={css.formGroup}>
             <label htmlFor="tag">Tag</label>
@@ -128,16 +125,17 @@ export default function NoteForm({ onCancel, onSuccess }: NoteFormProps) {
             </select>
           </div>
 
+          {/* 🟢 НОВЕ: Селект для вибору пріоритету */}
           <div className={css.formGroup}>
-            <label htmlFor="ttl">Термін життя</label>
+            <label htmlFor="priority">Пріоритет нотатки</label>
             <select
-              id="ttl"
-              name="ttl"
+              id="priority"
+              name="priority"
               className={css.select}
-              value={selectedTtl}
-              onChange={(e) => setSelectedTtl(e.target.value)}
+              value={selectedPriority}
+              onChange={(e) => setSelectedPriority(e.target.value)}
             >
-              {ttlOptions.map((opt) => (
+              {priorityOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>

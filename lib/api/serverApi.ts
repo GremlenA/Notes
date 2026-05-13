@@ -88,3 +88,18 @@ export const fetchNoteById = async (id: Note['id']): Promise<Note> => {
   }
   return res.json();
 };
+export const deleteNote = async (id: string): Promise<Note> => {
+  const baseUrl = await getBaseUrl();
+  const cookieString = await getCookieHeader();
+
+  const res = await fetch(`${baseUrl}/notes/${id}`, {
+    method: 'DELETE', // Обязательно указываем метод DELETE
+    cache: 'no-store',
+    headers: { Cookie: cookieString },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Request failed with status code ${res.status}`);
+  }
+  return res.json();
+};
